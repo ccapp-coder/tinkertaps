@@ -825,6 +825,66 @@
     </div>
   </section>
 
+  <!-- BOOKS -->
+  <style>
+    .books { padding:7rem 4rem; background:var(--cream); }
+    .books-header { display:flex; flex-direction:column; gap:0.5rem; margin-bottom:3rem; max-width:760px; }
+    .books-header h2 { font-family:"Cormorant Garamond",Georgia,serif; font-weight:400; font-size:clamp(2.2rem,4.5vw,3.3rem); line-height:1.15; letter-spacing:-0.005em; color:var(--ink); margin:0; }
+    .books-header h2 em { color:var(--wood-dk); font-style:italic; font-weight:500; }
+    .books-header p.books-lead { color:var(--smoke); font-size:1.05rem; line-height:1.65; max-width:640px; margin:0.5rem 0 0; }
+    .books-grid { display:grid; grid-template-columns:1fr 1fr; gap:2.5rem; align-items:start; }
+    .book-card { background:var(--white); border:1px solid rgba(28,74,30,0.10); border-radius:18px; padding:2.25rem 2rem; display:flex; flex-direction:column; transition:transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; }
+    .book-card:hover { transform:translateY(-4px); box-shadow:0 14px 40px rgba(28,74,30,0.08); border-color:var(--wood); }
+    .book-cover-wrap { background:var(--wood-pale); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem; display:flex; align-items:center; justify-content:center; }
+    .book-cover-wrap img { display:block; width:100%; max-width:240px; height:auto; border-radius:6px; box-shadow:0 8px 24px rgba(28,42,28,0.15); }
+    .book-tag { font-size:0.66rem; letter-spacing:0.28em; text-transform:uppercase; color:var(--wood); margin-bottom:0.5rem; font-weight:600; }
+    .book-card h3 { font-family:"Cormorant Garamond",Georgia,serif; font-weight:600; font-size:1.7rem; line-height:1.2; letter-spacing:-0.005em; color:var(--ink); margin:0 0 0.6rem; }
+    .book-card h3 em { color:var(--wood-dk); font-style:italic; }
+    .book-card p.book-blurb { color:var(--smoke); font-size:0.95rem; line-height:1.65; margin:0 0 1.5rem; flex:1; }
+    .book-btn { display:inline-block; align-self:flex-start; padding:0.85rem 1.6rem; background:var(--forest); color:var(--white); border-radius:999px; text-decoration:none; font-weight:600; font-size:0.92rem; letter-spacing:0.04em; transition:background 0.25s, transform 0.25s; }
+    .book-btn:hover { background:var(--forest-md); transform:translateY(-2px); }
+    .books-foot { margin-top:2.5rem; text-align:center; color:var(--smoke); font-size:0.92rem; }
+    .books-foot a { color:var(--wood-dk); text-decoration:none; border-bottom:1px solid rgba(196,135,74,0.4); }
+    @media (max-width:780px) {
+      .books { padding:5rem 1.5rem; }
+      .books-grid { grid-template-columns:1fr; gap:1.75rem; }
+    }
+  </style>
+
+  <section class="books" id="books">
+    <div class="books-header reveal">
+      <p class="section-label label-wood">Made for Parents</p>
+      <h2>Catch the days you'll <em>miss someday.</em></h2>
+      <p class="books-lead">Two keepsake journals from the TinkerTaps family — one heartfelt, one hilarious — for the first two years that go faster than anyone warns you about. Built to be filled in between disasters.</p>
+    </div>
+
+    <div class="books-grid reveal">
+
+      <div class="book-card">
+        <div class="book-cover-wrap">
+          <img src="yesterday-cover.png" alt="Wasn't That Just Yesterday? cover" loading="lazy" />
+        </div>
+        <p class="book-tag">Keepsake Journal</p>
+        <h3>Wasn't That Just <em>Yesterday?</em></h3>
+        <p class="book-blurb">A month-by-month keepsake journal for baby's first two years. Big monthly calendars to fill in whenever, gentle milestone checklists, space for the firsts, and pages for the letters you'll want to write to the person they're becoming. The keepsake journal you can actually keep up with.</p>
+        <a class="book-btn" href="https://a.co/d/08t66Us7" target="_blank" rel="noopener">Buy on Amazon →</a>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover-wrap">
+          <img src="blowouts-cover.png" alt="Blowouts &amp; Belly Laughs cover" loading="lazy" />
+        </div>
+        <p class="book-tag">Honest Baby Journal</p>
+        <h3>Blowouts &amp; <em>Belly Laughs</em></h3>
+        <p class="book-blurb">The hilariously honest baby journal for the firsts no one warns you about. The Inaugural Blowout, the bathtub incident, the meltdown over a banana that broke in half — with rating scales, a Hall of Fame, and a letter for later. The funniest baby-shower gift you can give new parents.</p>
+        <a class="book-btn" href="https://a.co/d/09mMfX22" target="_blank" rel="noopener">Buy on Amazon →</a>
+      </div>
+
+    </div>
+
+    <p class="books-foot reveal">Both books are gender-neutral, designed and self-published by us. Available in paperback on Amazon.</p>
+  </section>
+
   <!-- QUIZ -->
   <section class="quiz-section" id="quiz">
     <div class="quiz-inner">
