@@ -753,7 +753,8 @@
     @keyframes drift{from{transform:translateX(0)}to{transform:translateX(calc(100vw + 380px))}}
 
     /* hero screenshot gentle bob + warm glow */
-    .hero-ss{animation:heroBob 6s ease-in-out infinite}
+    .hero-ss{position:relative;z-index:1;animation:heroBob 6s ease-in-out infinite}
+    .hero-ss-wrap .float-chip{z-index:4}
     @keyframes heroBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
     .hero-ss-wrap::after{content:"";position:absolute;inset:-10% -8%;z-index:-1;border-radius:34px;
       background:radial-gradient(ellipse at 50% 55%, rgba(240,184,0,0.30), rgba(240,184,0,0) 68%);
