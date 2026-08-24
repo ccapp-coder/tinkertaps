@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-5ZT26G5Z');</script>
+  <!-- End Google Tag Manager -->
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Keyboard Playground — Free Baby &amp; Toddler Keyboard Game | TinkerTaps</title>
+  <meta name="description" content="A free, safe keyboard-smashing game for babies and toddlers. Every key pops letters, colors, sounds and surprises. No ads, nothing to break — press Esc for grown-ups."/>
+  <link rel="canonical" href="https://tinkertaps.courtrightco.com/play.html"/>
+  <meta property="og:title" content="TinkerTaps Keyboard Playground"/>
+  <meta property="og:description" content="Let your little one safely mash the keyboard. Letters, colors, sounds and five magical worlds."/>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231C4A1E'/><text x='16' y='23' font-family='Georgia' font-size='16' font-weight='bold' fill='%23F0B800' text-anchor='middle'>TT</text></svg>"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --forest:    #1C4A1E;
+      --forest-md: #2A6B2D;
+      --gold:      #F0B800;
+      --cream:     #FEFAF2;
+      --ink:       #1A2A1C;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { height:100%; }
+    body {
+      font-family:"Outfit",sans-serif;
+      overflow:hidden;
+      background:#1C4A1E;
+      user-select:none;
+      -webkit-user-select:none;
+      touch-action:manipulation;
+    }
+
+    /* ── World backgrounds ── */
+    #stage {
+      position:fixed; inset:0;
+      transition:background 0.8s ease;
+      overflow:hidden;
+      cursor:default;
+    }
+    #stage.hidecursor { cursor:none; }
+    .world-forest { background:linear-gradient(160deg,#1C4A1E 0%,#2A6B2D 45%,#3D8B41 100%); }
+    .world-ocean  { background:linear-gradient(160deg,#03356b 0%,#0a6ea8 50%,#28b5c9 100%); }
+    .world-space  { background:linear-gradient(160deg,#0b0524 0%,#2a1258 55%,#4b1d84 100%); }
+    .world-candy  { background:linear-gradient(160deg,#ff5fa2 0%,#ff8fb8 50%,#ffc4d8 100%); }
+    .world-sunset { background:linear-gradient(160deg,#7a1f00 0%,#d1490b 45%,#f5a623 100%); }
+
+    /* floating ambient emojis per world */
+    .floaty {
+      position:absolute;
+      font-size:2.4rem;
+      opacity:0.5;
+      animation:drift linear infinite;
+      pointer-events:none;
+      will-change:transform;
+    }
+    @keyframes drift {
+      from { transform:translateY(105vh) rotate(0deg); }
+      to   { transform:translateY(-15vh) rotate(40deg); }
+    }
+
+    /* ── popped characters ── */
+    .pop {
+      position:absolute;
+      font-family:"Fredoka One",cursive;
+      font-weight:400;
+      line-height:1;
+      pointer-events:none;
+      will-change:transform,opacity;
+      text-shadow:0 4px 18px rgba(0,0,0,0.35);
+      animation:popIn 1.8s cubic-bezier(0.18,1.4,0.4,1) forwards;
+    }
+    .pop.emoji { text-shadow:none; }
+    @keyframes popIn {
+      0%   { transform:scale(0) rotate(var(--rot)); opacity:0; }
+      12%  { transform:scale(1.15) rotate(var(--rot)); opacity:1; }
+      20%  { transform:scale(1) rotate(var(--rot)); opacity:1; }
+      75%  { transform:scale(1) rotate(var(--rot)) translateY(-2vh); opacity:1; }
+      100% { transform:scale(0.85) rotate(var(--rot)) translateY(-9vh); opacity:0; }
+    }
+
+    /* ── confetti particles (space bar) ── */
+    .spark {
+      position:absolute;
+      width:14px; height:14px;
+      border-radius:3px;
+      pointer-events:none;
+      will-change:transform,opacity;
+      animation:sparkFly 1.1s cubic-bezier(0.15,0.9,0.4,1) forwards;
+    }
+    .spark.round { border-radius:50%; }
+    @keyframes sparkFly {
+      0%   { transform:translate(0,0) scale(1) rotate(0deg); opacity:1; }
+      100% { transform:translate(var(--dx),var(--dy)) scale(0.3) rotate(540deg); opacity:0; }
+    }
+
+    /* ── ripple (enter key) ── */
+    .ripple {
+      position:absolute;
+      border-radius:50%;
+      border:6px solid rgba(255,255,255,0.85);
+      pointer-events:none;
+      will-change:transform,opacity;
+      animation:rippleOut 0.9s ease-out forwards;
+    }
+    @keyframes rippleOut {
+      0%   { transform:scale(0); opacity:1; }
+      100% { transform:scale(1); opacity:0; }
+    }
+
+    /* ── celebrated word ── */
+    .bigword {
+      position:absolute;
+      left:50%; top:42%;
+      transform:translate(-50%,-50%);
+      font-family:"Fredoka One",cursive;
+      text-align:center;
+      pointer-events:none;
+      text-shadow:0 6px 24px rgba(0,0,0,0.4);
+      animation:wordParty 2.4s cubic-bezier(0.2,1.3,0.4,1) forwards;
+      z-index:5;
+    }
+    .bigword .we { display:block; font-size:9rem; line-height:1.1; text-shadow:none; }
+    .bigword .wt { display:block; font-size:5rem; color:#fff; }
+    @keyframes wordParty {
+      0%   { transform:translate(-50%,-50%) scale(0) rotate(-8deg); opacity:0; }
+      15%  { transform:translate(-50%,-50%) scale(1.1) rotate(3deg); opacity:1; }
+      25%  { transform:translate(-50%,-50%) scale(1) rotate(0deg); }
+      80%  { transform:translate(-50%,-50%) scale(1); opacity:1; }
+      100% { transform:translate(-50%,-50%) scale(1.3); opacity:0; }
+    }
+
+    /* ── world-name toast ── */
+    #worldToast {
+      position:fixed; left:50%; top:8%;
+      transform:translateX(-50%);
+      font-family:"Fredoka One",cursive;
+      font-size:2.2rem;
+      color:#fff;
+      text-shadow:0 3px 12px rgba(0,0,0,0.4);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity 0.4s;
+      z-index:6;
+    }
+    #worldToast.show { opacity:1; }
+
+    /* ── hint bar ── */
+    #hint {
+      position:fixed; bottom:1.4rem; left:50%;
+      transform:translateX(-50%);
+      background:rgba(0,0,0,0.35);
+      color:rgba(255,255,255,0.9);
+      font-size:0.85rem; font-weight:400;
+      padding:0.55rem 1.3rem;
+      border-radius:99px;
+      pointer-events:none;
+      opacity:0;
+      transition:opacity 0.6s;
+      white-space:nowrap;
+      z-index:6;
+    }
+    #hint.show { opacity:1; }
+
+    /* ── intro / pause overlay ── */
+    #overlay {
+      position:fixed; inset:0;
+      background:linear-gradient(160deg,#1C4A1E 0%,#2A6B2D 40%,#1A5C1C 70%,#163E18 100%);
+      display:flex; align-items:center; justify-content:center;
+      z-index:10;
+      transition:opacity 0.35s ease;
+    }
+    #overlay.hidden { opacity:0; pointer-events:none; }
+    .card {
+      max-width:560px;
+      width:calc(100% - 2.5rem);
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.14);
+      border-radius:24px;
+      padding:2.6rem 2.4rem 2.1rem;
+      text-align:center;
+      backdrop-filter:blur(6px);
+    }
+    .tt-word { font-family:"Fredoka One",cursive; font-size:2rem; letter-spacing:0.02em; }
+    .tt-word span:nth-child(odd)  { color:var(--gold); }
+    .tt-word span:nth-child(even) { color:#8DC63F; }
+    .card h1 {
+      font-family:"Fredoka One",cursive;
+      font-size:2.3rem; color:#fff;
+      margin:0.7rem 0 0.6rem;
+      line-height:1.15;
+    }
+    .card p.sub {
+      color:rgba(255,255,255,0.75);
+      font-weight:300; font-size:1rem; line-height:1.6;
+      margin-bottom:1.6rem;
+    }
+    .start-pill {
+      display:inline-block;
+      background:var(--gold); color:var(--ink);
+      font-weight:700; font-size:1.05rem;
+      padding:1rem 2.4rem;
+      border-radius:99px;
+      border:none; cursor:pointer;
+      font-family:"Outfit",sans-serif;
+      animation:pulse 1.6s ease-in-out infinite;
+      margin-bottom:1.5rem;
+    }
+    @keyframes pulse {
+      0%,100% { transform:scale(1); box-shadow:0 0 0 0 rgba(240,184,0,0.45); }
+      50%     { transform:scale(1.05); box-shadow:0 0 0 14px rgba(240,184,0,0); }
+    }
+    .toggles {
+      display:flex; gap:0.8rem; justify-content:center;
+      margin-bottom:1.5rem; flex-wrap:wrap;
+    }
+    .tgl {
+      background:rgba(255,255,255,0.1);
+      border:1px solid rgba(255,255,255,0.2);
+      color:#fff; font-family:"Outfit",sans-serif;
+      font-size:0.82rem; font-weight:600;
+      padding:0.5rem 1.1rem; border-radius:99px;
+      cursor:pointer;
+    }
+    .tgl.on { background:rgba(240,184,0,0.25); border-color:var(--gold); }
+    .parent-note {
+      font-size:0.78rem; color:rgba(255,255,255,0.55);
+      font-weight:300; line-height:1.6;
+      border-top:1px solid rgba(255,255,255,0.12);
+      padding-top:1.1rem;
+    }
+    .parent-note strong { color:rgba(255,255,255,0.85); font-weight:600; }
+    .card-links { margin-top:1rem; display:flex; gap:1.4rem; justify-content:center; flex-wrap:wrap; }
+    .card-links a {
+      color:var(--gold); font-size:0.82rem; font-weight:600;
+      text-decoration:none;
+    }
+    .card-links a:hover { text-decoration:underline; }
+
+    @media (max-width:600px) {
+      .card h1 { font-size:1.7rem; }
+      .bigword .we { font-size:5.5rem; }
+      .bigword .wt { font-size:3rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5ZT26G5Z"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  <div id="stage" class="world-forest"></div>
+  <div id="worldToast"></div>
+  <div id="hint">Mash any key! &nbsp;•&nbsp; Arrow keys change worlds &nbsp;•&nbsp; Esc for grown-ups</div>
+
+  <div id="overlay">
+    <div class="card">
+      <div class="tt-word"><span>T</span><span>i</span><span>n</span><span>k</span><span>e</span><span>r</span><span>T</span><span>a</span><span>p</span><span>s</span></div>
+      <h1>Keyboard Playground</h1>
+      <p class="sub">Hand over the keyboard — every key pops letters, colors, sounds and surprises. Nothing to break, nothing to buy, no ads. Just tapping.</p>
+      <button class="start-pill" id="startBtn">Press any key to play</button>
+      <div class="toggles">
+        <button class="tgl on" id="tglSound">🔊 Sounds: On</button>
+        <button class="tgl on" id="tglVoice">🗣️ Say letters: On</button>
+      </div>
+      <p class="parent-note">
+        <strong>For grown-ups:</strong> while playing, the keyboard belongs to your little one —
+        pressing <strong>Esc</strong> brings this screen back, and any other key jumps right back into the game.
+        Use your <strong>mouse or trackpad</strong> to leave this page. The browser can't block
+        system shortcuts like ⌘Q or ⌘Tab, so for full lock-down use Guided Access (iPad) or a locked user profile.
+      </p>
+      <div class="card-links">
+        <a href="/">← TinkerTaps home</a>
+        <a href="/download.html">Get the full app free →</a>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  var stage = document.getElementById("stage");
+  var overlay = document.getElementById("overlay");
+  var hint = document.getElementById("hint");
+  var worldToast = document.getElementById("worldToast");
+  var playing = false;
+  var soundOn = true;
+  var voiceOn = true;
+
+  /* ── Worlds ── */
+  var WORLDS = [
+    { cls:"world-forest", name:"Forest 🌲",  floaties:["🌲","🦊","🍄","🦋","🐿️"] },
+    { cls:"world-ocean",  name:"Ocean 🐠",   floaties:["🐠","🐙","🫧","🐬","🐡"] },
+    { cls:"world-space",  name:"Space 🚀",   floaties:["🚀","⭐","🪐","👾","🌟"] },
+    { cls:"world-candy",  name:"Candy 🍭",   floaties:["🍭","🧁","🍬","🌈","🍩"] },
+    { cls:"world-sunset", name:"Safari 🦁",  floaties:["🦁","🦒","🌵","☀️","🦓"] }
+  ];
+  var worldIdx = 0;
+  var floatyEls = [];
+
+  function setWorld(i) {
+    worldIdx = ((i % WORLDS.length) + WORLDS.length) % WORLDS.length;
+    var w = WORLDS[worldIdx];
+    stage.className = w.cls + (stage.classList.contains("hidecursor") ? " hidecursor" : "");
+    worldToast.textContent = w.name;
+    worldToast.classList.add("show");
+    clearTimeout(worldToast._t);
+    worldToast._t = setTimeout(function(){ worldToast.classList.remove("show"); }, 1400);
+    // refresh floaties
+    floatyEls.forEach(function(el){ el.remove(); });
+    floatyEls = [];
+    for (var n = 0; n < 8; n++) {
+      var f = document.createElement("div");
+      f.className = "floaty";
+      f.textContent = w.floaties[n % w.floaties.length];
+      f.style.left = (Math.random() * 94) + "vw";
+      f.style.fontSize = (1.6 + Math.random() * 2.2) + "rem";
+      f.style.animationDuration = (14 + Math.random() * 18) + "s";
+      f.style.animationDelay = (-Math.random() * 20) + "s";
+      stage.appendChild(f);
+      floatyEls.push(f);
+    }
+  }
+
+  /* ── Colors ── */
+  var COLORS = ["#F0B800","#8DC63F","#5CAF5F","#FF6B6B","#4ECDC4","#FF9F1C",
+                "#C084FC","#38BDF8","#FB7185","#FDE047","#34D399","#F472B6","#FFFFFF"];
+  function rndColor(){ return COLORS[Math.floor(Math.random()*COLORS.length)]; }
+
+  /* ── Fun emoji for "other" keys ── */
+  var FUN = ["🐸","🐥","🐢","🦄","🐝","🌟","🎈","🎉","🍎","🚗","⚽","🌻","🐳","🦖","🍕","🎵","🧸","🌙","🍓","🐧"];
+
+  /* ── Word celebration ── */
+  var WORDS = { CAT:"🐱", DOG:"🐶", SUN:"☀️", MOM:"💛", DAD:"💙", STAR:"⭐", FISH:"🐟",
+                BABY:"👶", BALL:"⚽", DUCK:"🦆", FROG:"🐸", MOON:"🌙", BEAR:"🐻",
+                BIRD:"🐦", COW:"🐮", PIG:"🐷", BUS:"🚌", CAR:"🚗", BEE:"🐝", HI:"👋", LOVE:"❤️" };
+  var letterBuf = "";
+
+  /* ── DOM element cap ── */
+  var live = [];
+  function track(el, ms) {
+    live.push(el);
+    if (live.length > 80) {
+      var old = live.shift();
+      if (old && old.parentNode) old.remove();
+    }
+    setTimeout(function(){
+      el.remove();
+      var i = live.indexOf(el);
+      if (i > -1) live.splice(i, 1);
+    }, ms);
+  }
+
+  /* ── Audio: pentatonic pluck synth ── */
+  var actx = null, master = null;
+  function ensureAudio() {
+    if (actx) { if (actx.state === "suspended") actx.resume(); return; }
+    try {
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+      master = actx.createGain();
+      master.gain.value = 0.22;
+      master.connect(actx.destination);
+    } catch (e) { actx = null; }
+  }
+  // C major pentatonic over two octaves
+  var SCALE = [261.63,293.66,329.63,392.00,440.00,523.25,587.33,659.25,783.99,880.00];
+  function pluck(freq) {
+    if (!soundOn || !actx) return;
+    var t = actx.currentTime;
+    var osc = actx.createOscillator();
+    var g = actx.createGain();
+    osc.type = "triangle";
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.9, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+    osc.connect(g); g.connect(master);
+    osc.start(t); osc.stop(t + 0.55);
+  }
+  function whoosh() {
+    if (!soundOn || !actx) return;
+    var t = actx.currentTime;
+    var len = 0.4 * actx.sampleRate;
+    var buf = actx.createBuffer(1, len, actx.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = (Math.random()*2-1) * (1 - i/len);
+    var src = actx.createBufferSource(); src.buffer = buf;
+    var f = actx.createBiquadFilter();
+    f.type = "bandpass"; f.frequency.setValueAtTime(400, t);
+    f.frequency.exponentialRampToValueAtTime(2400, t + 0.35);
+    var g = actx.createGain(); g.gain.value = 0.5;
+    src.connect(f); f.connect(g); g.connect(master);
+    src.start(t);
+  }
+  function sweep(up) {
+    if (!soundOn || !actx) return;
+    var t = actx.currentTime;
+    var osc = actx.createOscillator();
+    var g = actx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(up ? 300 : 900, t);
+    osc.frequency.exponentialRampToValueAtTime(up ? 900 : 300, t + 0.25);
+    g.gain.setValueAtTime(0.4, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+    osc.connect(g); g.connect(master);
+    osc.start(t); osc.stop(t + 0.32);
+  }
+  function fanfare() {
+    if (!soundOn || !actx) return;
+    [0,2,4,7].forEach(function(step, i){
+      setTimeout(function(){ pluck(SCALE[step] * 1.5); }, i * 90);
+    });
+  }
+
+  /* ── Speech ── */
+  function say(text) {
+    if (!voiceOn || !("speechSynthesis" in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.rate = 0.9; u.pitch = 1.2;
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  /* ── Visual spawners ── */
+  function popChar(ch, isEmoji) {
+    var el = document.createElement("div");
+    el.className = "pop" + (isEmoji ? " emoji" : "");
+    el.textContent = ch;
+    var size = 4 + Math.random() * 8; // rem
+    el.style.fontSize = size + "rem";
+    el.style.left = (5 + Math.random() * 80) + "vw";
+    el.style.top  = (5 + Math.random() * 72) + "vh";
+    el.style.setProperty("--rot", (Math.random() * 40 - 20) + "deg");
+    if (!isEmoji) el.style.color = rndColor();
+    stage.appendChild(el);
+    track(el, 1800);
+  }
+
+  function burst(x, y, count) {
+    for (var i = 0; i < count; i++) {
+      var s = document.createElement("div");
+      s.className = "spark" + (Math.random() < 0.5 ? " round" : "");
+      s.style.left = x + "px";
+      s.style.top = y + "px";
+      s.style.background = rndColor();
+      var ang = Math.random() * Math.PI * 2;
+      var dist = 80 + Math.random() * 220;
+      s.style.setProperty("--dx", (Math.cos(ang) * dist) + "px");
+      s.style.setProperty("--dy", (Math.sin(ang) * dist - 60) + "px");
+      stage.appendChild(s);
+      track(s, 1100);
+    }
+  }
+
+  function ripple() {
+    var el = document.createElement("div");
+    el.className = "ripple";
+    var d = Math.max(window.innerWidth, window.innerHeight) * 1.6;
+    el.style.width = d + "px";
+    el.style.height = d + "px";
+    el.style.left = (window.innerWidth/2 - d/2) + "px";
+    el.style.top = (window.innerHeight/2 - d/2) + "px";
+    el.style.borderColor = rndColor();
+    stage.appendChild(el);
+    track(el, 900);
+  }
+
+  function celebrateWord(word, emoji) {
+    var el = document.createElement("div");
+    el.className = "bigword";
+    el.innerHTML = '<span class="we">' + emoji + '</span><span class="wt">' + word + '</span>';
+    stage.appendChild(el);
+    track(el, 2400);
+    burst(window.innerWidth/2, window.innerHeight/2, 30);
+    fanfare();
+    say(word.toLowerCase());
+  }
+
+  /* ── Play state ── */
+  function enterPlay() {
+    playing = true;
+    overlay.classList.add("hidden");
+    hint.classList.add("show");
+    clearTimeout(hint._t);
+    hint._t = setTimeout(function(){ hint.classList.remove("show"); }, 5000);
+    ensureAudio();
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(function(){});
+    }
+  }
+  function exitPlay() {
+    playing = false;
+    overlay.classList.remove("hidden");
+    hint.classList.remove("show");
+    stage.classList.remove("hidecursor");
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  }
+
+  /* ── Key handling ── */
+  document.addEventListener("keydown", function (e) {
+    // Let the OS/browser have modifier combos (we can't block ⌘Q anyway).
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+    if (e.key === "Escape") {
+      if (playing) exitPlay();
+      return; // Esc also exits fullscreen natively — that's fine.
+    }
+
+    e.preventDefault();
+
+    if (!playing) { enterPlay(); return; }
+    if (e.repeat) return;
+
+    var k = e.key;
+
+    if (/^[a-zA-Z]$/.test(k)) {
+      var ch = k.toUpperCase();
+      popChar(ch, false);
+      pluck(SCALE[(ch.charCodeAt(0) - 65) % SCALE.length]);
+      say(ch);
+      letterBuf = (letterBuf + ch).slice(-6);
+      for (var w in WORDS) {
+        if (letterBuf.slice(-w.length) === w) {
+          celebrateWord(w, WORDS[w]);
+          letterBuf = "";
+          break;
+        }
+      }
+    } else if (/^[0-9]$/.test(k)) {
+      popChar(k, false);
+      pluck(SCALE[parseInt(k, 10) % SCALE.length]);
+      say(k);
+      letterBuf = "";
+    } else if (k === " ") {
+      burst(Math.random() * window.innerWidth, Math.random() * window.innerHeight * 0.8, 24);
+      whoosh();
+    } else if (k === "Enter") {
+      ripple();
+      fanfare();
+    } else if (k === "ArrowRight" || k === "ArrowDown") {
+      setWorld(worldIdx + 1);
+      sweep(true);
+    } else if (k === "ArrowLeft" || k === "ArrowUp") {
+      setWorld(worldIdx - 1);
+      sweep(false);
+    } else {
+      popChar(FUN[Math.floor(Math.random() * FUN.length)], true);
+      pluck(SCALE[Math.floor(Math.random() * SCALE.length)]);
+    }
+  }, true);
+
+  /* ── Pointer: tap/click bursts (touch devices & mice) ── */
+  stage.addEventListener("pointerdown", function (e) {
+    if (!playing) return;
+    ensureAudio();
+    burst(e.clientX, e.clientY, 14);
+    popChar(FUN[Math.floor(Math.random() * FUN.length)], true);
+    pluck(SCALE[Math.floor(Math.random() * SCALE.length)]);
+  });
+
+  /* ── Start button (mouse users) ── */
+  document.getElementById("startBtn").addEventListener("click", function () {
+    ensureAudio();
+    enterPlay();
+  });
+
+  /* ── Toggles ── */
+  function wireToggle(id, label, get, set) {
+    var btn = document.getElementById(id);
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      set(!get());
+      btn.classList.toggle("on", get());
+      btn.textContent = label + (get() ? "On" : "Off");
+    });
+  }
+  wireToggle("tglSound", "🔊 Sounds: ", function(){ return soundOn; }, function(v){ soundOn = v; if (v) ensureAudio(); });
+  wireToggle("tglVoice", "🗣️ Say letters: ", function(){ return voiceOn; }, function(v){ voiceOn = v; });
+
+  /* ── Cursor auto-hide during play ── */
+  var cursorTimer = null;
+  document.addEventListener("mousemove", function () {
+    stage.classList.remove("hidecursor");
+    clearTimeout(cursorTimer);
+    if (playing) {
+      cursorTimer = setTimeout(function(){ stage.classList.add("hidecursor"); }, 3000);
+    }
+  });
+
+  /* ── Block context menu & drag while playing ── */
+  document.addEventListener("contextmenu", function (e) { if (playing) e.preventDefault(); });
+  document.addEventListener("dragstart", function (e) { e.preventDefault(); });
+
+  setWorld(0);
+})();
+</script>
+</body>
+</html>
