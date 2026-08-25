@@ -137,6 +137,42 @@
       100% { transform:translate(-50%,-50%) scale(1.3); opacity:0; }
     }
 
+    /* ── camera flash (print screen) ── */
+    #flash {
+      position:fixed; inset:0; background:#fff;
+      opacity:0; pointer-events:none; z-index:8;
+    }
+    #flash.go { animation:flashPop 0.5s ease-out; }
+    @keyframes flashPop { 0% { opacity:0.95; } 100% { opacity:0; } }
+
+    /* ── roller (scroll lock) ── */
+    .roller {
+      position:absolute; left:-12vw;
+      font-size:4.5rem;
+      pointer-events:none;
+      will-change:transform;
+      animation:rollAcross 1.6s linear forwards;
+    }
+    @keyframes rollAcross {
+      from { transform:translateX(0) rotate(0deg); }
+      to   { transform:translateX(124vw) rotate(1080deg); }
+    }
+
+    /* ── freeze-frame (pause key) ── */
+    #stage.frozen .floaty, #stage.frozen .pop,
+    #stage.frozen .spark, #stage.frozen .ripple,
+    #stage.frozen .roller { animation-play-state:paused !important; }
+
+    /* ── screen shake (control key) ── */
+    #stage.shake { animation:shakeIt 0.45s ease; }
+    @keyframes shakeIt {
+      0%,100% { transform:translate(0,0); }
+      20% { transform:translate(-14px,6px); }
+      40% { transform:translate(12px,-8px); }
+      60% { transform:translate(-9px,-5px); }
+      80% { transform:translate(7px,4px); }
+    }
+
     /* ── world-name toast ── */
     #worldToast {
       position:fixed; left:50%; top:8%;
@@ -258,6 +294,7 @@
   <!-- End Google Tag Manager (noscript) -->
 
   <div id="stage" class="world-forest"></div>
+  <div id="flash"></div>
   <div id="worldToast"></div>
   <div id="hint">Mash any key! &nbsp;•&nbsp; Arrow keys change worlds &nbsp;•&nbsp; Esc for grown-ups</div>
 
@@ -414,20 +451,85 @@
     osc.connect(g); g.connect(master);
     osc.start(t); osc.stop(t + 0.32);
   }
-  function fanfare() {
+  // Rising four-note arpeggio; mult shifts the whole thing up or down in pitch.
+  function fanfare(mult) {
     if (!soundOn || !actx) return;
+    mult = mult || 1.5;
     [0,2,4,7].forEach(function(step, i){
-      setTimeout(function(){ pluck(SCALE[step] * 1.5); }, i * 90);
+      setTimeout(function(){ pluck(SCALE[step] * mult); }, i * 90);
     });
+  }
+  function boom() {
+    if (!soundOn || !actx) return;
+    var t = actx.currentTime;
+    var osc = actx.createOscillator();
+    var g = actx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(90, t);
+    osc.frequency.exponentialRampToValueAtTime(45, t + 0.4);
+    g.gain.setValueAtTime(0.9, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+    osc.connect(g); g.connect(master);
+    osc.start(t); osc.stop(t + 0.5);
+  }
+  function shutter() {
+    if (!soundOn || !actx) return;
+    var t = actx.currentTime;
+    var len = Math.floor(0.06 * actx.sampleRate);
+    var buf = actx.createBuffer(1, len, actx.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = (Math.random()*2-1) * (1 - i/len);
+    var src = actx.createBufferSource(); src.buffer = buf;
+    var f = actx.createBiquadFilter();
+    f.type = "highpass"; f.frequency.value = 1800;
+    var g = actx.createGain(); g.gain.value = 0.6;
+    src.connect(f); f.connect(g); g.connect(master);
+    src.start(t);
+  }
+  function boing() {
+    if (!soundOn || !actx) return;
+    var t = actx.currentTime;
+    var osc = actx.createOscillator();
+    var g = actx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(420, t);
+    osc.frequency.exponentialRampToValueAtTime(140, t + 0.12);
+    osc.frequency.exponentialRampToValueAtTime(520, t + 0.3);
+    g.gain.setValueAtTime(0.5, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+    osc.connect(g); g.connect(master);
+    osc.start(t); osc.stop(t + 0.4);
   }
 
   /* ── Speech ── */
+  // Pick the most natural-sounding English voice available instead of the
+  // robotic default. Voice lists load async in some browsers.
+  var pickedVoice = null;
+  function pickVoice() {
+    if (!("speechSynthesis" in window)) return;
+    var voices = window.speechSynthesis.getVoices();
+    if (!voices.length) return;
+    var prefer = ["samantha","ava","zoe","allison","google us english","natural","premium","enhanced"];
+    var en = voices.filter(function(v){ return /^en/i.test(v.lang); });
+    for (var p = 0; p < prefer.length; p++) {
+      for (var i = 0; i < en.length; i++) {
+        if (en[i].name.toLowerCase().indexOf(prefer[p]) !== -1) { pickedVoice = en[i]; return; }
+      }
+    }
+    pickedVoice = en[0] || null;
+  }
+  if ("speechSynthesis" in window) {
+    pickVoice();
+    window.speechSynthesis.onvoiceschanged = pickVoice;
+  }
   function say(text) {
     if (!voiceOn || !("speechSynthesis" in window)) return;
     try {
       window.speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(text);
-      u.rate = 0.9; u.pitch = 1.2;
+      // Speak lowercase — several voices announce "capital" before uppercase letters.
+      var u = new SpeechSynthesisUtterance(text.toLowerCase());
+      if (pickedVoice) u.voice = pickedVoice;
+      u.rate = 0.9; u.pitch = 1.1;
       window.speechSynthesis.speak(u);
     } catch (e) {}
   }
@@ -476,6 +578,48 @@
     track(el, 900);
   }
 
+  var flashEl = document.getElementById("flash");
+  var lastShot = 0;
+  function cameraFlash() {
+    var now = performance.now();
+    if (now - lastShot < 300) return; // PrintScreen can fire on keydown AND keyup
+    lastShot = now;
+    flashEl.classList.remove("go");
+    void flashEl.offsetWidth;
+    flashEl.classList.add("go");
+    popChar("📸", true);
+    shutter();
+  }
+
+  var ROLLERS = ["⚽","🏀","🌀","🛼","🚂","🐎","🛞","🎳"];
+  function roll() {
+    var el = document.createElement("div");
+    el.className = "roller";
+    el.textContent = ROLLERS[Math.floor(Math.random() * ROLLERS.length)];
+    el.style.top = (10 + Math.random() * 68) + "vh";
+    stage.appendChild(el);
+    track(el, 1600);
+    whoosh();
+  }
+
+  var frozenTimer = null;
+  function freezeFrame() {
+    stage.classList.add("frozen");
+    sweep(false);
+    // the snowflake goes on <body>, outside #stage, so it isn't frozen too
+    var el = document.createElement("div");
+    el.className = "pop emoji";
+    el.textContent = "❄️";
+    el.style.fontSize = "9rem";
+    el.style.left = (20 + Math.random() * 55) + "vw";
+    el.style.top = (15 + Math.random() * 50) + "vh";
+    el.style.setProperty("--rot", "0deg");
+    document.body.appendChild(el);
+    track(el, 1800);
+    clearTimeout(frozenTimer);
+    frozenTimer = setTimeout(function(){ stage.classList.remove("frozen"); }, 1200);
+  }
+
   function celebrateWord(word, emoji) {
     var el = document.createElement("div");
     el.className = "bigword";
@@ -508,9 +652,11 @@
   }
 
   /* ── Key handling ── */
+  var MODIFIER_KEYS = { Shift:1, Control:1, Meta:1, Alt:1, Fn:1, CapsLock:1 };
   document.addEventListener("keydown", function (e) {
-    // Let the OS/browser have modifier combos (we can't block ⌘Q anyway).
-    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    // A modifier pressed on its own is a toy; a modifier COMBO (⌘Q, Ctrl+R…)
+    // belongs to the OS/browser, so let those through untouched.
+    if ((e.metaKey || e.ctrlKey || e.altKey) && !MODIFIER_KEYS[e.key]) return;
 
     if (e.key === "Escape") {
       if (playing) exitPlay();
@@ -547,7 +693,42 @@
       whoosh();
     } else if (k === "Enter") {
       ripple();
-      fanfare();
+      fanfare(1.5);                       // the classic — mid pitch
+    } else if (k === "\\") {
+      ripple();
+      fanfare(3);                         // one octave above Enter
+    } else if (k === "Shift") {
+      ripple();
+      fanfare(0.75);                      // one octave below Enter
+    } else if (k === "PrintScreen" || k === "F13") {
+      cameraFlash();
+    } else if (k === "ScrollLock" || k === "F14") {
+      roll();
+    } else if (k === "Pause" || k === "F15" || k === "Clear") {
+      freezeFrame();
+    } else if (/^F([1-9]|1[0-2])$/.test(k)) {
+      // F1–F12 = a piano row: each key has its own note and screen position.
+      var fn = parseInt(k.slice(1), 10);
+      var fx = (fn / 13) * window.innerWidth;
+      var fy = window.innerHeight * (0.25 + Math.random() * 0.3);
+      burst(fx, fy, 16);
+      pluck(SCALE[(fn - 1) % SCALE.length] * 2);
+    } else if (k === "Control") {
+      boom();
+      stage.classList.remove("shake");
+      void stage.offsetWidth;             // restart the animation
+      stage.classList.add("shake");
+      burst(window.innerWidth / 2, window.innerHeight * 0.7, 20);
+    } else if (k === "Meta") {
+      // Command = star shower + sparkly high arpeggio
+      for (var m = 0; m < 5; m++) popChar(["⭐","🌟","✨","💫","🌠"][m], true);
+      fanfare(2);
+    } else if (k === "Alt") {
+      popChar(["🐸","🦘","🐰","🏀","🤸"][Math.floor(Math.random() * 5)], true);
+      boing();
+    } else if (k === "Fn") {
+      popChar(FUN[Math.floor(Math.random() * FUN.length)], true);
+      boing();
     } else if (k === "ArrowRight" || k === "ArrowDown") {
       setWorld(worldIdx + 1);
       sweep(true);
@@ -557,6 +738,14 @@
     } else {
       popChar(FUN[Math.floor(Math.random() * FUN.length)], true);
       pluck(SCALE[Math.floor(Math.random() * SCALE.length)]);
+    }
+  }, true);
+
+  // On Windows, PrintScreen often fires only on key RELEASE — catch that too.
+  document.addEventListener("keyup", function (e) {
+    if (e.key === "PrintScreen" && playing) {
+      e.preventDefault();
+      cameraFlash();
     }
   }, true);
 
