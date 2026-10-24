@@ -10,8 +10,8 @@
   <!-- End Google Tag Manager -->
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Keyboard Playground — Free Baby &amp; Toddler Keyboard Game | TinkerTaps</title>
-  <meta name="description" content="A free, safe keyboard-smashing game for babies and toddlers. Every key pops letters, colors, sounds and surprises. No ads, nothing to break — press Esc for grown-ups."/>
+  <title>Keyboard Playground | Free Baby &amp; Toddler Keyboard Game | TinkerTaps</title>
+  <meta name="description" content="A free, safe keyboard-smashing game for babies and toddlers. Every key pops letters, colors, sounds and surprises. No ads, nothing to break. Press Esc for grown-ups."/>
   <link rel="canonical" href="https://tinkertaps.courtrightco.com/play.html"/>
   <meta property="og:title" content="TinkerTaps Keyboard Playground"/>
   <meta property="og:description" content="Let your little one safely mash the keyboard. Letters, colors, sounds and five magical worlds."/>
@@ -302,15 +302,15 @@
     <div class="card">
       <div class="tt-word"><span>T</span><span>i</span><span>n</span><span>k</span><span>e</span><span>r</span><span>T</span><span>a</span><span>p</span><span>s</span></div>
       <h1>Keyboard Playground</h1>
-      <p class="sub">Hand over the keyboard — every key pops letters, colors, sounds and surprises. Nothing to break, nothing to buy, no ads. Just tapping.</p>
+      <p class="sub">Hand over the keyboard. Every key pops letters, colors, sounds and surprises. Nothing to break, nothing to buy, no ads. Just tapping.</p>
       <button class="start-pill" id="startBtn">Press any key to play</button>
       <div class="toggles">
         <button class="tgl on" id="tglSound">🔊 Sounds: On</button>
         <button class="tgl on" id="tglVoice">🗣️ Say letters: On</button>
       </div>
       <p class="parent-note">
-        <strong>For grown-ups:</strong> while playing, the keyboard belongs to your little one —
-        pressing <strong>Esc</strong> brings this screen back, and any other key jumps right back into the game.
+        <strong>For grown-ups:</strong> while playing, the keyboard belongs to your little one.
+        Pressing <strong>Esc</strong> brings this screen back, and any other key jumps right back into the game.
         Use your <strong>mouse or trackpad</strong> to leave this page. The browser can't block
         system shortcuts like ⌘Q or ⌘Tab, so for full lock-down use Guided Access (iPad) or a locked user profile.
       </p>
@@ -526,7 +526,7 @@
     if (!voiceOn || !("speechSynthesis" in window)) return;
     try {
       window.speechSynthesis.cancel();
-      // Speak lowercase — several voices announce "capital" before uppercase letters.
+      // Speak lowercase, several voices announce "capital" before uppercase letters.
       var u = new SpeechSynthesisUtterance(text.toLowerCase());
       if (pickedVoice) u.voice = pickedVoice;
       u.rate = 0.9; u.pitch = 1.1;
@@ -660,7 +660,7 @@
 
     if (e.key === "Escape") {
       if (playing) exitPlay();
-      return; // Esc also exits fullscreen natively — that's fine.
+      return; // Esc also exits fullscreen natively, that's fine.
     }
 
     e.preventDefault();
@@ -693,7 +693,7 @@
       whoosh();
     } else if (k === "Enter") {
       ripple();
-      fanfare(1.5);                       // the classic — mid pitch
+      fanfare(1.5);                       // the classic, mid pitch
     } else if (k === "\\") {
       ripple();
       fanfare(3);                         // one octave above Enter
@@ -741,7 +741,7 @@
     }
   }, true);
 
-  // On Windows, PrintScreen often fires only on key RELEASE — catch that too.
+  // On Windows, PrintScreen often fires only on key RELEASE, catch that too.
   document.addEventListener("keyup", function (e) {
     if (e.key === "PrintScreen" && playing) {
       e.preventDefault();
