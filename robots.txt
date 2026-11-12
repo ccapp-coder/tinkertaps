@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
 Sitemap: https://tinkertaps.courtrightco.com/sitemap.xml
+Sitemap: https://tinkertaps.courtrightco.com/shop/sitemap.xml
